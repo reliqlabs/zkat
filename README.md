@@ -54,17 +54,24 @@ sp1up
 
 Each proof type has its own README with detailed usage and public output documentation.
 
-### Post proofs
+### General (any atproto lexicon)
+
+| Proof | Description | Docs |
+|---|---|---|
+| [record-authorship](proofs/record-authorship/) | DID authored a record with a specific content hash | [README](proofs/record-authorship/README.md) |
+| [selective-disclosure](proofs/selective-disclosure/) | Specific record fields have specific values | [README](proofs/selective-disclosure/README.md) |
+| [record-count](proofs/record-count/) | DID has at least N records in a collection | [README](proofs/record-count/README.md) |
+
+### Bluesky posts (`app.bsky.feed.post`)
 
 | Proof | Description | Docs |
 |---|---|---|
 | [post-contains](proofs/post-contains/) | Post text contains a given string | [README](proofs/post-contains/README.md) |
-| [post-authorship](proofs/post-authorship/) | DID authored a post with a specific content hash | [README](proofs/post-authorship/README.md) |
 | [post-timestamp](proofs/post-timestamp/) | Post was created before or after a timestamp | [README](proofs/post-timestamp/README.md) |
 | [post-reply-to](proofs/post-reply-to/) | Post is a reply to a specific parent | [README](proofs/post-reply-to/README.md) |
 | [post-mention](proofs/post-mention/) | Post mentions a specific DID | [README](proofs/post-mention/README.md) |
 
-### Social graph proofs
+### Bluesky social graph
 
 | Proof | Description | Docs |
 |---|---|---|
@@ -76,13 +83,11 @@ Each proof type has its own README with detailed usage and public output documen
 | [mutual-follow](proofs/mutual-follow/) | Two DIDs follow each other | [README](proofs/mutual-follow/README.md) |
 | [not-following](proofs/not-following/) | DID does NOT follow a target DID | [README](proofs/not-following/README.md) |
 
-### General proofs
+### Bluesky profile (`app.bsky.actor.profile`)
 
 | Proof | Description | Docs |
 |---|---|---|
 | [profile-field](proofs/profile-field/) | Profile field contains a string | [README](proofs/profile-field/README.md) |
-| [selective-disclosure](proofs/selective-disclosure/) | Specific record fields have specific values | [README](proofs/selective-disclosure/README.md) |
-| [record-count](proofs/record-count/) | DID has at least N records in a collection | [README](proofs/record-count/README.md) |
 
 ### Quick start
 

@@ -1,20 +1,25 @@
 use anyhow::{bail, Result};
 use clap::Parser;
-use sp1_sdk::{include_elf, Elf, SP1Stdin};
+use record_authorship_lib::{ProofInput, ProofOutput};
 use sp1_sdk::blocking::{ProveRequest, Prover, ProverClient};
 use sp1_sdk::ProvingKey;
+use sp1_sdk::{include_elf, Elf, SP1Stdin};
 use zkat_host::prepare_record_proof;
-use post_authorship_lib::{ProofInput, ProofOutput};
 
-const ELF: Elf = include_elf!("post-authorship-program");
+const ELF: Elf = include_elf!("record-authorship-program");
 
 #[derive(Parser)]
-#[command(name = "post-authorship", about = "Prove that a DID authored a post with a specific content hash")]
+#[command(
+    name = "record-authorship",
+    about = "Prove that a DID authored a record with a specific content hash"
+)]
 struct Args {
     #[arg(long, default_value = "execute")]
     mode: String,
     #[arg(long)]
     did: String,
+    #[arg(long)]
+    collection: String,
     #[arg(long)]
     rkey: String,
     #[arg(long)]
@@ -23,7 +28,12 @@ struct Args {
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let proof = prepare_record_proof(&args.did, "app.bsky.feed.post", &args.rkey, args.pds.as_deref())?;
+    let proof = prepare_record_proof(
+        &args.did,
+        &args.collection,
+        &args.rkey,
+        args.pds.as_deref(),
+    )?;
 
     let input = ProofInput {
         did: args.did,
@@ -46,15 +56,28 @@ fn main() -> Result<()> {
             let r: ProofOutput = output.read();
             println!("Cycles: {}", report.total_instruction_count());
             println!("DID: {}", r.did);
-            println!("Record hash: {}", r.record_hash.iter().map(|b| format!("{b:02x}")).collect::<String>());
-            println!("Pubkey hash: {}", r.pubkey_hash.iter().map(|b| format!("{b:02x}")).collect::<String>());
+            println!("Record: {}", r.record_key);
+            println!(
+                "Record hash: {}",
+                r.record_hash
+                    .iter()
+                    .map(|b| format!("{b:02x}"))
+                    .collect::<String>()
+            );
+            println!(
+                "Pubkey hash: {}",
+                r.pubkey_hash
+                    .iter()
+                    .map(|b| format!("{b:02x}"))
+                    .collect::<String>()
+            );
             println!("Commit rev: {}", r.commit_rev);
         }
         "prove" => {
             let pk = client.setup(ELF)?;
             let mut proof = client.prove(&pk, stdin).run()?;
             let r: ProofOutput = proof.public_values.read();
-            println!("Proof generated. DID {} authored record", r.did);
+            println!("Proof generated. DID {} authored {}", r.did, r.record_key);
             client.verify(&proof, pk.verifying_key(), None)?;
             println!("Proof verified.");
         }

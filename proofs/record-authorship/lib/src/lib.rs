@@ -21,6 +21,7 @@ pub struct ProofInput {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProofOutput {
     pub did: String,
+    pub record_key: String,
     pub record_hash: [u8; 32],
     pub pubkey_hash: [u8; 32],
     pub commit_rev: String,

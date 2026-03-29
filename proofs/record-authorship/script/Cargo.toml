@@ -1,15 +1,15 @@
 [package]
-name = "post-authorship-script"
+name = "record-authorship-script"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "post-authorship"
+name = "record-authorship"
 path = "src/main.rs"
 
 [dependencies]
 zkat-host = { path = "../../../crates/host" }
-post-authorship-lib = { path = "../lib" }
+record-authorship-lib = { path = "../lib" }
 sp1-sdk = { version = "6.0.2", features = ["blocking"] }
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
