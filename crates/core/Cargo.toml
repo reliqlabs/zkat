@@ -1,0 +1,13 @@
+[package]
+name = "zkat-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+serde_bytes = { version = "0.11", default-features = false, features = ["alloc"] }
+serde_ipld_dagcbor = { version = "0.6", default-features = false }
+ipld-core = { version = "0.4", default-features = false, features = ["serde"] }
+sha2 = { version = "0.10", default-features = false }
+k256 = { version = "0.13", default-features = false, features = ["ecdsa"] }
+p256 = { version = "0.13", default-features = false, features = ["ecdsa"] }
