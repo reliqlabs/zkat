@@ -1,0 +1,8 @@
+[package]
+name = "post-authorship-lib"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zkat-core = { path = "../../../crates/core" }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }

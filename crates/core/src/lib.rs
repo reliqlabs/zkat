@@ -165,3 +165,120 @@ fn reconstruct_key(prev_key: &[u8], prefix_len: usize, suffix: &[u8]) -> Vec<u8>
     key.extend_from_slice(suffix);
     key
 }
+
+// -- Bluesky record types (DAG-CBOR deserialization for guest programs) --
+
+/// Bluesky record types.
+///
+/// All types use `#[serde(default)]` on optional fields and include
+/// `$type` to handle the atproto type discriminator in DAG-CBOR.
+pub mod records {
+    use alloc::string::String;
+    use alloc::vec::Vec;
+
+    /// `app.bsky.feed.post`
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Post {
+        #[serde(rename = "$type", default)]
+        pub _type: Option<String>,
+        pub text: String,
+        pub created_at: String,
+        /// Reply ref uses Ipld because StrongRef contains CID (CBOR tag 42)
+        /// which serde_ipld_dagcbor can't deserialize in struct mode.
+        #[serde(default)]
+        pub reply: Option<ipld_core::ipld::Ipld>,
+        #[serde(default)]
+        pub facets: Option<Vec<Facet>>,
+        #[serde(default)]
+        pub langs: Option<Vec<String>>,
+        #[serde(default)]
+        pub embed: Option<ipld_core::ipld::Ipld>,
+        #[serde(default)]
+        pub labels: Option<ipld_core::ipld::Ipld>,
+        #[serde(default)]
+        pub tags: Option<Vec<String>>,
+    }
+
+    #[derive(serde::Deserialize)]
+    pub struct Facet {
+        #[serde(rename = "$type", default)]
+        pub _type: Option<String>,
+        pub index: ByteSlice,
+        pub features: Vec<FacetFeature>,
+    }
+
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct ByteSlice {
+        pub byte_start: u64,
+        pub byte_end: u64,
+    }
+
+    #[derive(serde::Deserialize)]
+    pub struct FacetFeature {
+        #[serde(rename = "$type")]
+        pub feature_type: String,
+        #[serde(default)]
+        pub did: Option<String>,
+        #[serde(default)]
+        pub uri: Option<String>,
+        #[serde(default)]
+        pub tag: Option<String>,
+    }
+
+    /// `app.bsky.graph.follow`
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Follow {
+        #[serde(rename = "$type", default)]
+        pub _type: Option<String>,
+        pub subject: String,
+        pub created_at: String,
+    }
+
+    // Note: Like and Repost records contain CID fields in `subject: StrongRef`
+    // which serde_ipld_dagcbor cannot deserialize in struct mode (no_std).
+    // Guest programs for liked/reposted use generic Ipld deserialization instead.
+
+    /// `app.bsky.graph.block`
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Block {
+        #[serde(rename = "$type", default)]
+        pub _type: Option<String>,
+        pub subject: String,
+        pub created_at: String,
+    }
+
+    /// `app.bsky.graph.listitem`
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct ListItem {
+        #[serde(rename = "$type", default)]
+        pub _type: Option<String>,
+        pub subject: String,
+        pub list: String,
+        pub created_at: String,
+    }
+
+    /// `app.bsky.actor.profile` (rkey is always "self")
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Profile {
+        #[serde(rename = "$type", default)]
+        pub _type: Option<String>,
+        #[serde(default)]
+        pub display_name: Option<String>,
+        #[serde(default)]
+        pub description: Option<String>,
+        #[serde(default)]
+        pub avatar: Option<ipld_core::ipld::Ipld>,
+        #[serde(default)]
+        pub banner: Option<ipld_core::ipld::Ipld>,
+        #[serde(default)]
+        pub labels: Option<ipld_core::ipld::Ipld>,
+        #[serde(default)]
+        pub pronouns: Option<String>,
+    }
+}

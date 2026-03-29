@@ -263,7 +263,13 @@ pub fn extract_mst_path(
         }
 
         if next_cid.is_none() {
-            next_cid = node.entries.last().and_then(|e| e.tree.as_ref());
+            // Target is after all entries — follow last entry's right subtree,
+            // or the left pointer if there are no entries.
+            next_cid = node
+                .entries
+                .last()
+                .and_then(|e| e.tree.as_ref())
+                .or(node.left.as_ref());
         }
 
         let cid = next_cid.context("record key not found in MST (no subtree to follow)")?;
@@ -316,4 +322,57 @@ fn reconstruct_key(prev_key: &[u8], prefix_len: usize, suffix: &[u8]) -> Vec<u8>
     }
     key.extend_from_slice(suffix);
     key
+}
+
+// -- High-level proof preparation --
+
+/// All the data needed to construct a single-record ZK proof input.
+pub struct RecordProof {
+    pub did_info: DidInfo,
+    pub pds: String,
+    pub unsigned_commit: Vec<u8>,
+    pub signature: Vec<u8>,
+    pub mst_nodes: Vec<Vec<u8>>,
+    pub record: Vec<u8>,
+    pub record_key: String,
+    pub commit_rev: String,
+}
+
+/// Fetch and prepare everything needed for a single-record inclusion proof.
+pub fn prepare_record_proof(
+    did: &str,
+    collection: &str,
+    rkey: &str,
+    pds_override: Option<&str>,
+) -> Result<RecordProof> {
+    let did_info = resolve_did(did)?;
+    let pds = pds_override
+        .map(|s| s.to_string())
+        .or_else(|| did_info.pds_endpoint.clone())
+        .context("no PDS endpoint found (use --pds)")?;
+
+    let car_bytes = fetch_record_car(&pds, did, collection, rkey)?;
+    let (root_cid, blocks) = parse_car(&car_bytes)?;
+    let commit_bytes = blocks
+        .get(&root_cid)
+        .context("commit block not found in CAR")?;
+    let commit = extract_commit_proof_data(commit_bytes)?;
+    let record_key = format!("{collection}/{rkey}");
+    let mst_path = extract_mst_path(&blocks, &commit.mst_root, &record_key)?;
+    let record_cid = find_record_cid(mst_path.last().unwrap(), &record_key)?;
+    let record = blocks
+        .get(&record_cid)
+        .context("record block not found in CAR")?
+        .clone();
+
+    Ok(RecordProof {
+        did_info,
+        pds,
+        unsigned_commit: commit.unsigned_commit,
+        signature: commit.signature,
+        mst_nodes: mst_path,
+        record,
+        record_key,
+        commit_rev: commit.rev,
+    })
 }

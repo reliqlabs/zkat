@@ -1,0 +1,18 @@
+[package]
+name = "liked-script"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "liked"
+path = "src/main.rs"
+
+[dependencies]
+zkat-host = { path = "../../../crates/host" }
+liked-lib = { path = "../lib" }
+sp1-sdk = { version = "6.0.2", features = ["blocking"] }
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+
+[build-dependencies]
+sp1-build = "6.0.2"

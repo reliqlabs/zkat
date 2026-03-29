@@ -50,14 +50,44 @@ curl -L https://sp1up.succinct.xyz | bash
 sp1up
 ```
 
-## Usage
+## Available proofs
 
-### post-contains
+Each proof type has its own README with detailed usage and public output documentation.
 
-Prove that a Bluesky account posted text containing a specific string.
+### Post proofs
+
+| Proof | Description | Docs |
+|---|---|---|
+| [post-contains](proofs/post-contains/) | Post text contains a given string | [README](proofs/post-contains/README.md) |
+| [post-authorship](proofs/post-authorship/) | DID authored a post with a specific content hash | [README](proofs/post-authorship/README.md) |
+| [post-timestamp](proofs/post-timestamp/) | Post was created before or after a timestamp | [README](proofs/post-timestamp/README.md) |
+| [post-reply-to](proofs/post-reply-to/) | Post is a reply to a specific parent | [README](proofs/post-reply-to/README.md) |
+| [post-mention](proofs/post-mention/) | Post mentions a specific DID | [README](proofs/post-mention/README.md) |
+
+### Social graph proofs
+
+| Proof | Description | Docs |
+|---|---|---|
+| [follows](proofs/follows/) | DID follows another DID | [README](proofs/follows/README.md) |
+| [blocked](proofs/blocked/) | DID blocked another DID | [README](proofs/blocked/README.md) |
+| [liked](proofs/liked/) | DID liked a specific post | [README](proofs/liked/README.md) |
+| [reposted](proofs/reposted/) | DID reposted a specific post | [README](proofs/reposted/README.md) |
+| [list-member](proofs/list-member/) | DID added someone to a specific list | [README](proofs/list-member/README.md) |
+| [mutual-follow](proofs/mutual-follow/) | Two DIDs follow each other | [README](proofs/mutual-follow/README.md) |
+| [not-following](proofs/not-following/) | DID does NOT follow a target DID | [README](proofs/not-following/README.md) |
+
+### General proofs
+
+| Proof | Description | Docs |
+|---|---|---|
+| [profile-field](proofs/profile-field/) | Profile field contains a string | [README](proofs/profile-field/README.md) |
+| [selective-disclosure](proofs/selective-disclosure/) | Specific record fields have specific values | [README](proofs/selective-disclosure/README.md) |
+| [record-count](proofs/record-count/) | DID has at least N records in a collection | [README](proofs/record-count/README.md) |
+
+### Quick start
 
 ```sh
-# Execute (test mode, no ZK proof generated)
+# Execute any proof (test mode, no ZK proof generated)
 cargo run -p post-contains-script --release -- \
   --did did:plc:example \
   --rkey 3abc123def \
@@ -71,20 +101,7 @@ cargo run -p post-contains-script --release -- \
   --search "search term"
 ```
 
-The PDS endpoint is auto-resolved from the DID document. Use `--pds <url>` to override.
-
-### Public output
-
-The proof commits the following values, visible to any verifier:
-
-| Field | Description |
-|---|---|
-| `did` | The account's decentralized identifier |
-| `search_string` | The string that was searched for |
-| `pubkey_hash` | SHA-256 of the signing public key (verifier checks against DID resolution) |
-| `commit_rev` | Commit revision TID (verifier can check recency) |
-
-A valid proof is itself the assertion that the post was found — the guest program aborts if the record does not contain the search string, making proof generation impossible.
+The PDS endpoint is auto-resolved from the DID document. Use `--pds <url>` to override. All proofs follow this pattern — a valid proof is the assertion (the guest program aborts if the predicate is not satisfied).
 
 ## Adding a new proof type
 

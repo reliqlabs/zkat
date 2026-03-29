@@ -1,0 +1,11 @@
+[package]
+name = "post-authorship-program"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sp1-zkvm = "6.0.2"
+zkat-core = { path = "../../../crates/core" }
+post-authorship-lib = { path = "../lib" }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+serde_ipld_dagcbor = { version = "0.6", default-features = false }
